@@ -1,13 +1,13 @@
 ---
 name: plans
-description: Archive finalized Claude Code implementation plans to a named, indexed global archive at ~/.claude/plans/archive/. Use this skill whenever the user says "archive this plan", "save this plan", "/plans", "/plans archive", "finalize plan", or "this plan is done". Also use for "what plans do I have", "show archived plans", "plans list", "find the plan for [project]". Trigger proactively at the end of any plan-mode session that produced a finalized implementation plan — suggest archiving before the session ends. Works globally across all projects — not tied to any specific repo or git workflow.
+description: Archive finalized Claude Code implementation plans to named, project-local files with a global index at ~/.claude/plans/INDEX.md. Use this skill whenever the user says "archive this plan", "save this plan", "/plans", "/plans archive", "finalize plan", or "this plan is done". Also use for "what plans do I have", "show archived plans", "plans list", "find the plan for [project]". Trigger proactively at the end of any plan-mode session that produced a finalized implementation plan — suggest archiving before the session ends. Works globally across all projects — not tied to any specific repo or git workflow.
 ---
 
 # Plans Archive Skill
 
-This skill archives finalized Claude Code implementation plans from `~/.claude/plans/<random-slug>.md` to a named, indexed global archive. It keeps plans findable, paired with their project, and available as context in future sessions.
+This skill archives finalized Claude Code implementation plans to **project-local** `plans/` directories with a **global index** at `~/.claude/plans/INDEX.md`. Plans stay with their projects. The index is the cross-project lookup.
 
-This skill is **global** — it works across all projects and requires no Git repo or commit workflow. Archives live in `~/.claude/plans/archive/`.
+This skill is **global** — it works across all projects and requires no Git repo or commit workflow.
 
 ## Why This Matters
 
@@ -15,30 +15,41 @@ Claude Code auto-saves plan mode output to `~/.claude/plans/<random-slug>.md`. T
 
 ---
 
-## Archive Location
+## File Layout
 
 ```
-~/.claude/plans/                    — Claude Code auto-generated plans (random slugs, do not modify)
-~/.claude/plans/archive/            — Named, indexed archive (managed by this skill)
-  INDEX.md                          — Master index table across all projects
-  YYYY-MM-DD-project-slug.md        — Individual archived plan files (verbatim)
+~/.claude/plans/
+  INDEX.md                              — Global lookup: slug ↔ project-local plan file
+  misty-conjuring-hammock.md            — Claude Code auto-generated plan (random slug, do not modify)
+  vast-coalescing-cookie.md             — Another auto-generated plan
+  ...
+
+<project-directory>/plans/
+  2026-03-21-marketing-messaging.md     — Named plan copy, references slug file
+  2026-03-21-product-analysis.md        — Another named plan
+  ...
 ```
 
-No git. No project repo required.
+- **`~/.claude/plans/<slug>.md`** — Claude's auto-generated plans. Never modify these.
+- **`<project>/plans/<date-name>.md`** — Named, project-local copies with a reference back to the slug file.
+- **`~/.claude/plans/INDEX.md`** — Master lookup table mapping slugs to project-local files.
 
 ---
 
 ## INDEX.md Format
 
-```markdown
-# Plans Archive
+Lives at `~/.claude/plans/INDEX.md`.
 
-| Date | Project | Title | File | Status |
-|---|---|---|---|---|
-| 2026-03-20 | nvoss-dashboard | Label sync + triage improvements | [2026-03-20-nvoss-label-sync.md](2026-03-20-nvoss-label-sync.md) | `active` |
+```markdown
+# Plans Index
+
+| Date | Slug | Project | Title | Local Plan | Status |
+|---|---|---|---|---|---|
+| 2026-03-21 | `misty-conjuring-hammock` | code-katz | Marketing & Messaging Plan | `code-katz/plans/2026-03-21-marketing-messaging.md` | `active` |
+| 2026-03-21 | `misty-conjuring-hammock` | d20m | Product Analysis & Roadmap | `d20m/plans/2026-03-21-product-analysis.md` | `active` |
 ```
 
-Newest row first. Status values:
+Newest row first. Multiple plans can reference the same slug (when one slug file contains plans for multiple projects). Status values:
 
 | Status | Meaning |
 |---|---|
@@ -49,13 +60,14 @@ Newest row first. Status values:
 
 ---
 
-## Archive Filename Format
+## Local Plan Filename Format
 
-`YYYY-MM-DD-project-slug.md` — date of archiving, 3-5 word lowercase-hyphenated slug.
+`YYYY-MM-DD-plan-slug.md` — date of archiving, 3-5 word lowercase-hyphenated slug derived from the plan title.
 
 Examples:
-- `2026-03-20-nvoss-label-sync.md`
-- `2026-02-10-canopy-auth-redesign.md`
+- `2026-03-21-marketing-messaging.md`
+- `2026-03-21-product-analysis.md`
+- `2026-02-10-auth-redesign.md`
 
 ---
 
@@ -69,7 +81,7 @@ Examples:
 - "find the plan for [project]" / "show me the plan for [project]"
 
 ### Proactive
-At the end of a plan-mode session that produced a finalized implementation plan — before the user moves to execution — suggest: "This plan looks finalized — want me to archive it? It'll be named and indexed in `~/.claude/plans/archive/` so you can find it by project later."
+At the end of a plan-mode session that produced a finalized implementation plan — before the user moves to execution — suggest: "This plan looks finalized — want me to archive it to `<project>/plans/`?"
 
 Do NOT trigger proactively for exploratory or in-progress plans, partial outlines, or plans explicitly marked as drafts.
 
@@ -84,22 +96,24 @@ In order:
 2. **Conversation extraction** — Extract the most recent structured implementation plan from the thread.
 3. **Ask** — "Where is the plan? I can read `~/.claude/plans/<slug>.md` if you have the filename, or extract it from this conversation."
 
-### Step 2: Determine Project Name and Title
+### Step 2: Determine Project and Title
 
 Extract the plan title from the first H1 heading. Derive:
-- **Project name** — short human-readable identifier for INDEX.md (e.g., "nvoss-dashboard", "canopy-portal")
+- **Project directory** — the project root where the plan will be saved (e.g., `code-katz/`, `d20m/`)
+- **Project name** — short human-readable identifier for INDEX.md (e.g., "code-katz", "d20m")
 - **Short slug** — lowercase-hyphenated, 3-5 words from the title, for the filename
 
-Suggest both and confirm: "I'll archive this as `2026-03-20-nvoss-label-sync.md` under project `nvoss-dashboard` — correct?"
+Suggest and confirm: "I'll save this as `code-katz/plans/2026-03-21-marketing-messaging.md` — correct?"
 
 ### Step 3: Show the User (before writing anything)
 
 ```
 Here's what I'm about to do:
 
-1. Write plan to ~/.claude/plans/archive/YYYY-MM-DD-project-slug.md
-2. Update ~/.claude/plans/archive/INDEX.md
-   — New row: YYYY-MM-DD | project | title | file | active
+1. Create <project>/plans/ directory (if needed)
+2. Write plan to <project>/plans/YYYY-MM-DD-plan-slug.md
+3. Update ~/.claude/plans/INDEX.md
+   — New row: date | slug | project | title | local path | active
    — Previous active plan for this project (if any) → archived
 
 Plan starts with:
@@ -114,26 +128,26 @@ Never write files before user confirms.
 
 ### Step 4: Write Files
 
-1. Create `~/.claude/plans/archive/` if it doesn't exist.
-2. Write plan content verbatim to the archive file. Prepend a header block:
+1. Create `<project>/plans/` directory if it doesn't exist.
+2. Write plan content to the local plan file. Prepend a header block:
 
 ```markdown
-> Archived: YYYY-MM-DD · Project: [project name] · Original slug: `[random-slug-name]`
-> Source: `~/.claude/plans/[slug].md` (or "conversation" if extracted from thread)
-> Maintained by [claude-plan-skill](https://github.com/code-katz/claude-plan-skill).
+> Source: `~/.claude/plans/<random-slug-name>.md`
+> Archived: YYYY-MM-DD · Project: [project name]
+> Maintained by [claude-plans-skill](https://github.com/code-katz/claude-plans-skill).
 
 ---
 
 [verbatim plan content]
 ```
 
-If the source was a random-slug file, include the full slug name (e.g., `vast-coalescing-cookie`) — this is the fun part, keep it. If the plan was extracted from conversation with no slug, omit the slug line.
+If the source was a random-slug file, include the full slug name (e.g., `misty-conjuring-hammock`) — this is the fun part, keep it. If the plan was extracted from conversation with no slug, use `Source: conversation` instead.
 
-3. Read existing `INDEX.md` (create it if it doesn't exist). Update the previously-active row for this project to `archived` or `superseded`. Prepend new row with status `active`.
+3. Read existing `~/.claude/plans/INDEX.md` (create it if it doesn't exist). Update the previously-active row for this project to `archived` or `superseded`. Prepend new row with status `active`.
 
 ### Step 5: Confirm
 
-"Archived to `~/.claude/plans/archive/YYYY-MM-DD-project-slug.md` and indexed."
+"Saved to `<project>/plans/YYYY-MM-DD-plan-slug.md` and indexed in `~/.claude/plans/INDEX.md`."
 
 No git commit. No push.
 
@@ -143,7 +157,7 @@ No git commit. No push.
 
 When the user asks "what plans do I have" / "plans list" / "show archived plans":
 
-1. Read `~/.claude/plans/archive/INDEX.md`
+1. Read `~/.claude/plans/INDEX.md`
 2. Display the full table — never truncate
 3. Offer to load any plan: "Want me to read any of these?"
 
@@ -152,7 +166,7 @@ When the user asks "what plans do I have" / "plans list" / "show archived plans"
 ## Workflow: Retrieving a Plan
 
 1. Read INDEX.md and find matching rows (case-insensitive, partial match OK)
-2. One match: read and display the archive file
+2. One match: read and display the local plan file
 3. Multiple matches: show matching rows and ask which
 4. No match: report not found, offer to search by date or keywords
 
@@ -163,7 +177,7 @@ When the user asks "what plans do I have" / "plans list" / "show archived plans"
 Triggers: "the plan is done" / "we shipped it" / "mark the plan executed"
 
 1. Update INDEX.md: change the `active` plan's status to `executed`
-2. Optionally add `Executed: YYYY-MM-DD` to the archive file header
+2. Optionally add `Executed: YYYY-MM-DD` to the local plan file header
 3. Confirm: "Marked `[title]` as executed in the index."
 4. Suggest a devlog entry: "Want to log a devlog `milestone` entry referencing this plan?"
 
@@ -184,13 +198,15 @@ When a session begins on a known project:
 - **INDEX.md missing** — Create it fresh.
 - **INDEX.md unexpected format** — Show the user and ask whether to overwrite or manually merge.
 - **Title/project ambiguous** — Always ask before archiving with incorrect metadata.
+- **Project directory unclear** — Ask the user: "Which project directory should this plan live in?"
 
 ---
 
 ## Style Guidelines
 
-- Archive filenames use the date of archiving (not plan creation or delivery date)
-- Short-title slugs should be meaningful when scanning `~/.claude/plans/archive/` — not generic
+- Local plan filenames use the date of archiving (not plan creation or delivery date)
+- Short-title slugs should be meaningful when scanning `<project>/plans/` — not generic
 - INDEX.md is always newest-first
 - Preserve plan content verbatim — no reformatting, no summarizing
 - Project names in INDEX.md should be consistent across rows
+- One slug can map to multiple project-local plans (when a plan file covers multiple projects)
