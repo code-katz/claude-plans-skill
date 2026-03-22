@@ -70,8 +70,8 @@ Or let it trigger proactively — at the end of a finalized plan-mode session, i
 
 ## Pairs With
 
-- [claude-devlog-skill](https://github.com/d6veteran/claude-devlog-skill) — plans capture the "how before execution," devlog captures the "what was decided and why"
-- [claude-roadmap-skill](https://github.com/d6veteran/claude-roadmap-skill) — roadmap tracks what's coming; plans capture the implementation detail when it's time to build
+- [claude-devlog-skill](https://github.com/code-katz/claude-devlog-skill) — plans capture the "how before execution," devlog captures the "what was decided and why"
+- [claude-roadmap-skill](https://github.com/code-katz/claude-roadmap-skill) — roadmap tracks what's coming; plans capture the implementation detail when it's time to build
 
 ## Repository Contents
 
