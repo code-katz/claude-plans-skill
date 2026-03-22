@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="publish/claude-plans-skill-header.svg" alt="claude-plans-skill" width="100%">
+  <img src="publish/images/claude-plans-skill-header.svg" alt="claude-plans-skill" width="100%">
 </p>
 
 # claude-plans-skill
