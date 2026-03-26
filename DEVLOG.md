@@ -5,6 +5,27 @@ Auto-maintained via [claude-devlog-skill](https://github.com/code-katz/claude-de
 
 ---
 
+## [2026-03-26] Added lint check requirement to SKILL.md
+
+**Category:** `feature`
+**Tags:** `lint`, `code-quality`, `skill-behavior`, `cross-tool`
+**Risk Level:** `low`
+**Breaking Change:** `no`
+
+### Summary
+Added a "Lint Check" subsection after Session Start Behavior, requiring the skill to verify the target project has a linter configured when identifying a project for plan archiving.
+
+### Detail
+- New subsection placed after "Session Start Behavior", before "Error Handling"
+- Framed as "when identifying the project for plan archiving" since the plans skill has no formal Project Context section
+- Checks for stack-appropriate lint config: Ruff (Python), ESLint/Biome (JS/TS), SwiftLint (Swift), golangci-lint (Go), clippy (Rust), pre-commit (general)
+- Part of a cross-tool effort to standardize lint checks across all code-katz tools
+
+### Decisions Made
+- **After Session Start Behavior rather than at the top** — plans skill discovers its project during archiving, not at session start like devlog/roadmap, so the check belongs where project identification actually happens
+
+---
+
 ## [2026-03-21] Plans skill v2.0 — project-local archives with global index
 
 **Category:** `refactor`

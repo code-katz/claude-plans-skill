@@ -59,6 +59,7 @@ No re-planning. No guessing which slug file. The plan is indexed, named, and ret
 - **Tracks** plan lifecycle: `active` → `archived` / `superseded` / `executed`
 - **Preserves** the original random slug in each archive file header (the fun part)
 - **Suggests archiving** proactively at the end of finalized plan-mode sessions
+- **Checks for linter config** when identifying a project — flags missing linters and recommends stack-appropriate tools before proceeding
 
 No git required. Plans are Claude config artifacts — they live alongside your project, indexed globally.
 
