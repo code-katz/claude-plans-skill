@@ -5,6 +5,36 @@ Auto-maintained via [claude-devlog-skill](https://github.com/code-katz/claude-de
 
 ---
 
+## [2026-03-29] Added in-file status markers, rejected status, and plan review on archive
+
+**Category:** `feature`
+**Tags:** `status-markers`, `rejected`, `plan-review`, `context-management`, `skill-behavior`
+**Risk Level:** `med`
+**Breaking Change:** `yes`
+
+### Summary
+Added `> Status:` line to plan file headers so Claude can identify stale plans when reading files directly. Added "rejected" as a fifth status value. Expanded status change workflow and added active-plan review during archiving.
+
+### Detail
+- Added `> Status: \`active\`` line to plan file header template, between Archived and Maintained lines
+- Status in file header must always match INDEX.md; both are updated together on any status change
+- Added `rejected` status: "Created but never acted on; no longer relevant"
+- Replaced narrow "Marking a Plan Executed" workflow with general "Changing Plan Status" workflow covering all transitions (executed, superseded, rejected, archived) with trigger phrases for each
+- Added "Reading Plan Files Directly" section: check `> Status:` line first, treat non-active plans as historical only, handle legacy files without status lines by checking INDEX.md
+- Added plan review step to archiving workflow (Step 4): when archiving a new plan, scan INDEX.md for other `active` plans in the same project and prompt user to update stale ones
+- SKILL.md grew from 227 to 253 lines (+26)
+
+### Decisions Made
+- **Status in file header (not just INDEX.md):** INDEX.md is the master index, but plans are often referenced by file path in devlogs, roadmaps, and conversations. If Claude reads the file directly, the in-file status prevents acting on a stale plan.
+- **"rejected" over "abandoned" or "cancelled":** "Rejected" is precise: the plan was evaluated and not adopted. "Abandoned" implies work started and stopped. "Cancelled" implies external force.
+- **Plan review piggybacked on archiving:** Rather than a separate manual audit, the review triggers automatically when archiving a new plan.
+
+### Related
+- Plan: `code-katz/claude-plans-skill/plans/2026-03-29-plans-status-markers.md`
+- Companion change: claude-devlog-skill deprecation markers (same session)
+
+---
+
 ## [2026-03-26] Added lint check requirement to SKILL.md
 
 **Category:** `feature`
