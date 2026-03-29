@@ -57,6 +57,7 @@ Newest row first. Multiple plans can reference the same slug (when one slug file
 | `archived` | Superseded by a newer plan after execution work began |
 | `superseded` | Replaced before execution started |
 | `executed` | Fully implemented and delivered |
+| `rejected` | Created but never acted on; no longer relevant |
 
 ---
 
@@ -134,6 +135,7 @@ Never write files before user confirms.
 ```markdown
 > Source: `~/.claude/plans/<random-slug-name>.md`
 > Archived: YYYY-MM-DD · Project: [project name]
+> Status: `active`
 > Maintained by [claude-plans-skill](https://github.com/code-katz/claude-plans-skill).
 
 ---
@@ -141,9 +143,13 @@ Never write files before user confirms.
 [verbatim plan content]
 ```
 
+The `> Status:` line is the in-file status marker. It must always match the plan's status in INDEX.md. When a plan's status changes, update both INDEX.md and this header line. This ensures that if Claude reads a plan file directly (via a path in a devlog, roadmap, or conversation), the status is immediately visible without consulting INDEX.md.
+
 If the source was a random-slug file, include the full slug name (e.g., `misty-conjuring-hammock`) — this is the fun part, keep it. If the plan was extracted from conversation with no slug, use `Source: conversation` instead.
 
-3. Read existing `~/.claude/plans/INDEX.md` (create it if it doesn't exist). Update the previously-active row for this project to `archived` or `superseded`. Prepend new row with status `active`.
+3. Read existing `~/.claude/plans/INDEX.md` (create it if it doesn't exist). Update the previously-active row for this project to `archived` or `superseded`. Update the corresponding plan file's `> Status:` header line to match. Prepend new row with status `active`.
+
+4. **Review other active plans for this project.** Scan INDEX.md for any other `active` plans for the same project. If found, flag them to the user: "There are N other active plans for [project]. Should any of these be marked as executed, superseded, or rejected?" List the plans with their titles and dates. User decides per-plan; update both INDEX.md and file headers accordingly. This prevents stale `active` plans from accumulating.
 
 ### Step 5: Confirm
 
@@ -172,14 +178,26 @@ When the user asks "what plans do I have" / "plans list" / "show archived plans"
 
 ---
 
-## Workflow: Marking a Plan Executed
+## Workflow: Changing Plan Status
 
-Triggers: "the plan is done" / "we shipped it" / "mark the plan executed"
+Any plan's status can be changed at any time. Both INDEX.md and the plan file's `> Status:` header line must be updated together.
 
-1. Update INDEX.md: change the `active` plan's status to `executed`
-2. Optionally add `Executed: YYYY-MM-DD` to the local plan file header
-3. Confirm: "Marked `[title]` as executed in the index."
-4. Suggest a devlog entry: "Want to log a devlog `milestone` entry referencing this plan?"
+### Triggers
+
+| User says | New status |
+|---|---|
+| "mark the plan executed" / "we shipped it" / "the plan is done" | `executed` |
+| "this plan is superseded" / "we replaced this plan" | `superseded` |
+| "reject this plan" / "we're not doing this" / "this plan is dead" | `rejected` |
+| "archive this plan" (when a newer plan exists) | `archived` |
+
+### Steps
+
+1. Identify the plan (by title, slug, or context). If ambiguous, ask.
+2. Update INDEX.md: change the plan's status column.
+3. Update the plan file's `> Status:` header line to match (e.g., `> Status: \`executed\``). If the plan file has no `> Status:` line (legacy file), add one after the `> Archived:` line.
+4. Confirm: "Marked `[title]` as `[new status]` (was `[old status]`)."
+5. For `executed` status specifically, suggest a devlog entry: "Want to log a devlog `milestone` entry referencing this plan?"
 
 ---
 
@@ -189,6 +207,16 @@ When a session begins on a known project:
 1. Check INDEX.md for an `active` plan for this project.
 2. If found, read it silently — let it inform your work. Do not summarize unless the user asks.
 3. If the match is uncertain, ask: "I found a recent plan that might be for this project — [title] from [date]. Should I load it as context?"
+4. Do NOT read plans with status `executed`, `superseded`, `archived`, or `rejected` at session start. These are historical context only.
+
+## Reading Plan Files Directly
+
+When you encounter a plan file path in a devlog entry, roadmap reference, conversation, or any other context:
+
+1. **Check the `> Status:` line in the file header first.** This is the authoritative in-file status marker.
+2. If status is `executed`, `superseded`, `archived`, or `rejected`: note the status and do **not** treat this as the current approach. It is historical context only. If the user is asking about it for research purposes, provide it with the status clearly noted.
+3. If status is `active`: treat as the current plan.
+4. If no `> Status:` line exists (legacy plan file without the marker): check INDEX.md for the plan's status before acting on it. If it appears in INDEX.md as non-active, treat accordingly. If it does not appear in INDEX.md, ask the user.
 
 ### Lint Check
 
