@@ -1,0 +1,6 @@
+{
+  "name": "claude-plans",
+  "description": "Archive finalized Claude Code implementation plans to project-local plans/ directories with a lifecycle status (active, executed, superseded, rejected) and a global index for cross-project lookup.",
+  "version": "0.2.0",
+  "author": { "name": "Code Katz" }
+}
