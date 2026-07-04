@@ -80,10 +80,19 @@ No git required. Plans are Claude config artifacts — they live alongside your 
 
 This skill is for [Claude Code](https://claude.ai/code). Install it once and it's available across all your projects:
 
+### As a plugin (recommended)
+
+```
+/plugin marketplace add code-katz/claude-plugins
+/plugin install claude-plans@code-katz
+```
+
+### Manual install
+
 ```bash
 mkdir -p ~/.claude/skills/plans
 curl -o ~/.claude/skills/plans/SKILL.md \
-  https://raw.githubusercontent.com/code-katz/claude-plans-skill/main/SKILL.md
+  https://raw.githubusercontent.com/code-katz/claude-plans-skill/main/skills/plans/SKILL.md
 ```
 
 ---
